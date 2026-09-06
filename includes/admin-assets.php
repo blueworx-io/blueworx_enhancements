@@ -49,6 +49,12 @@ function blueworx_admin_design_screens() {
 		'blueworx_page_blueworx-cache',
 		'blueworx_page_blueworx-support',
 		'blueworx_page_blueworx-sso',
+		// SSO Logs twice on purpose: it hangs off the BlueWorx menu while single
+		// sign-on is on, and off no parent at all while it is off, and the hook
+		// suffix is different in each case. Named both ways so the screen runs
+		// flush either way rather than only while the function is running.
+		'blueworx_page_blueworx-sso-logs',
+		'admin_page_blueworx-sso-logs',
 		'blueworx_page_blueworx-external',
 		'blueworx_page_blueworx-embedded',
 		'blueworx_page_blueworx-additions',

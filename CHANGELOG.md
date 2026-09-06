@@ -4,6 +4,13 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses semantic
 versioning.
 
+## [1.81.1] - 2026-09-06
+
+### Fixed
+- **SSO Logs sat in a box of its own.** The screen was missing from the list of
+  BlueWorx pages that run edge to edge, so WordPress's own page margins were
+  left around it and its header had a grey gutter no other screen has.
+
 ## [1.81.0] - 2026-09-04
 
 ### Added
