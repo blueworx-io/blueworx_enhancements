@@ -9,7 +9,8 @@ versioning.
 ### Fixed
 - **SSO Logs sat in a box of its own.** The screen was missing from the list of
   BlueWorx pages that run edge to edge, so WordPress's own page margins were
-  left around it and its header had a grey gutter no other screen has.
+  left around it and its header had a grey gutter no other screen has. Single
+  sign-on's own settings screen did the same while sign-on was switched off.
 
 ## [1.81.0] - 2026-09-04
 

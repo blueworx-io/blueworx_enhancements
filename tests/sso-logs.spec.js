@@ -83,7 +83,10 @@ test.describe('SSO Logs', () => {
     const hasTable = await table.count();
 
     if (hasTable > 0) {
-      const headings = await table.locator('thead th').allInnerTexts();
+      // textContent rather than innerText: the design system sets the headings
+      // in capitals with text-transform, and innerText reports what is painted,
+      // so every one of these read as SHOUTED and matched nothing.
+      const headings = await table.locator('thead th').allTextContents();
       const joined = headings.join(' ');
 
       expect(joined).toContain('When');
