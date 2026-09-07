@@ -4,6 +4,14 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses semantic
 versioning.
 
+## [1.82.0] - 2026-09-07
+
+### Fixed
+
+- On a site running another BlueWorx plugin, the newest copy of the admin design
+  system is now the one that loads. Whichever plugin happened to load first used
+  to decide how every BlueWorx screen looked, including other plugins' screens.
+
 ## [1.81.1] - 2026-09-06
 
 ### Fixed

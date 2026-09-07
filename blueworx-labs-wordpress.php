@@ -3,7 +3,7 @@
  * Plugin Name:       BlueWorx Labs | WordPress Enhancements
  * Plugin URI:        https://blueworx.io/
  * Description:       Site hardening, admin and media tools, cache refresh, and profile enhancements.
- * Version:           1.81.1
+ * Version:           1.82.0
  * Requires at least: 5.0
  * Requires PHP:      8.0
  * Author:            BlueWorx
@@ -63,7 +63,7 @@ if ( defined( 'BLUEWORX_PLUGIN_UPDATE_TOKEN' ) && BLUEWORX_PLUGIN_UPDATE_TOKEN )
 $blueworx_update_checker->getVcsApi()->enableReleaseAssets();
 
 if ( ! defined( 'BLUEWORX_LABS_VERSION' ) ) {
-	define( 'BLUEWORX_LABS_VERSION', '1.81.1' );
+	define( 'BLUEWORX_LABS_VERSION', '1.82.0' );
 }
 
 // The main plugin file's own path. Two things need it by name rather than by
@@ -84,6 +84,13 @@ if ( ! defined( 'BLUEWORX_LABS_URL' ) ) {
 if ( ! defined( 'BLUEWORX_CUSTOM_LOGIN_SLUG' ) ) {
 	define( 'BLUEWORX_CUSTOM_LOGIN_SLUG', 'admin_login' );
 }
+
+// The shared admin design system's registrar. Required here, at plugin load
+// time rather than from inside admin-assets.php or any hook: registration has
+// to run before any copy on the site enqueues, and the newest-wins comparison
+// only works if every copy announces itself this early. See
+// assets/blueworx-admin-design.php for why.
+require_once BLUEWORX_LABS_PATH . 'assets/blueworx-admin-design.php';
 
 require_once BLUEWORX_LABS_PATH . 'includes/helpers.php';
 require_once BLUEWORX_LABS_PATH . 'includes/features.php';
