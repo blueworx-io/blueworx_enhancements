@@ -344,6 +344,15 @@ function blueworx_sso_render_detail() {
 		)
 	);
 
+	$fields .= blueworx_sso_text_field(
+		array(
+			'key'         => 'failure_url',
+			'label'       => __( 'Send people here when a sign-in fails', 'blueworx-labs-wordpress' ),
+			'placeholder' => home_url( '/' ),
+			'help'        => __( 'Leave blank for your home page. Wherever they land, they are told the sign-in did not work.', 'blueworx-labs-wordpress' ),
+		)
+	);
+
 	// The callback address exists to be pasted into somebody else's control
 	// panel, so it gets a copy button rather than a line of text to select.
 	$fields .= blueworx_ds_field(
@@ -619,7 +628,7 @@ function blueworx_sso_save_settings( $posted ) {
 		update_option( 'blueworx_sso_' . $field, $value, false );
 	}
 
-	$url_fields = array( 'issuer', 'redirect_uri', 'redirect_after_login', 'redirect_after_register', 'redirect_after_logout', 'no_account_url' );
+	$url_fields = array( 'issuer', 'redirect_uri', 'redirect_after_login', 'redirect_after_register', 'redirect_after_logout', 'no_account_url', 'failure_url' );
 
 	foreach ( blueworx_sso_endpoint_override_fields() as $key => $unused_label ) {
 		$url_fields[] = $key . '_override';

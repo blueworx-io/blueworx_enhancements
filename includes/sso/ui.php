@@ -126,3 +126,73 @@ function blueworx_sso_maybe_hide_password_form() {
 	echo '<style id="blueworx-sso-hide-password">#loginform p:not(.blueworx-sso-actions),#loginform .user-pass-wrap,#loginform .forgetmenot,#loginform .submit{display:none}</style>';
 }
 add_action( 'login_head', 'blueworx_sso_maybe_hide_password_form' );
+
+/**
+ * The sentence shown to somebody whose sign-in did not work.
+ *
+ * One wording, wherever it is shown. It deliberately says nothing about which
+ * step failed — the detail lives in the sign-on log, where only the site owner
+ * can read it.
+ *
+ * @return string Translated sentence.
+ */
+function blueworx_sso_failure_message() {
+	return __( 'We could not sign you in. Please try again.', 'blueworx-labs-wordpress' );
+}
+
+/**
+ * Whether this request is a page somebody was sent to by a failed sign-in.
+ *
+ * The feature has to be on for this to mean anything. Without that check the
+ * query string alone would paint an alarming red banner across any page of any
+ * site, for anyone who typed it.
+ *
+ * @return bool
+ */
+function blueworx_sso_showing_failure() {
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Presentation only; the flag carries no meaning beyond "show a notice".
+	return isset( $_GET['blueworx_sso_error'] ) && ! is_admin() && blueworx_sso_enabled();
+}
+
+/**
+ * Prints the failure notice on the front of the site.
+ *
+ * A failed sign-in now lands on an ordinary page rather than the login screen,
+ * so the notice has to travel with it — otherwise the person is bounced to the
+ * home page with no idea why, which looks exactly like a broken link.
+ *
+ * Styles are inline and the markup is printed only on the redirected request,
+ * so nothing is loaded on the other pages of the site.
+ *
+ * @return void
+ */
+function blueworx_sso_render_failure_notice() {
+	static $shown = false;
+
+	if ( $shown || ! blueworx_sso_showing_failure() ) {
+		return;
+	}
+
+	$shown = true;
+
+	printf(
+		'<div class="blueworx-sso-notice" role="alert"><p class="blueworx-sso-notice__text">%1$s</p></div>'
+		. '<style id="blueworx-sso-notice-style">.blueworx-sso-notice{box-sizing:border-box;width:100%%;margin:0;padding:14px 20px;background:#fdecec;border-bottom:1px solid #f0b8b8;color:#7a1c1c;font-size:15px;line-height:1.5;text-align:center}.blueworx-sso-notice__text{margin:0}</style>',
+		esc_html( blueworx_sso_failure_message() )
+	);
+}
+add_action( 'wp_body_open', 'blueworx_sso_render_failure_notice' );
+
+/**
+ * Prints the notice for themes that never call wp_body_open().
+ *
+ * Plenty of older themes do not, and a notice nobody sees is the same as no
+ * notice at all. The static guard in the renderer means a theme that supports
+ * both hooks still only shows one.
+ *
+ * @return void
+ */
+function blueworx_sso_render_failure_notice_fallback() {
+	blueworx_sso_render_failure_notice();
+}
+add_action( 'wp_footer', 'blueworx_sso_render_failure_notice_fallback' );

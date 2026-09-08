@@ -4,6 +4,17 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses semantic
 versioning.
 
+## [1.82.0] - 2026-09-08
+
+### Changed
+- **A failed sign-in no longer lands on the login screen.** Somebody who
+  clicked a sign-in button on the front of the site is sent back to the home
+  page, with a short line telling them it did not work — not dropped on a
+  WordPress login form, which reads as "your account is broken". A new field on
+  the Single sign-on screen, "Send people here when a sign-in fails", points it
+  somewhere else if the home page is not right. Blank means the home page.
+  Sites that want the old behaviour can set it to their login address.
+
 ## [1.81.1] - 2026-09-08
 
 ### Changed
