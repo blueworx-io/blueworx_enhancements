@@ -529,14 +529,13 @@ body.login .language-switcher select {
 /*
  * Single sign-on button.
  *
- * Styled to sit under the sign-in button as a clearly secondary route, and drawn
- * with an inline SVG rather than an icon font so it costs no extra request.
+ * Styled to sit under the sign-in button as a clearly secondary route. Label
+ * only — no icon, so the label alone has to say where the button leads.
  */
 body.login .blueworx-sso-button {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: var(--bw-space-4);
 	margin: var(--bw-space-7) 0 0;
 	padding: var(--bw-space-5) var(--bw-space-7);
 	border: 1px solid var(--bw-line);
@@ -553,6 +552,3 @@ body.login .blueworx-sso-button:focus {
 	color: var(--bw-brand-deep);
 }
 
-body.login .blueworx-sso-button__icon {
-	flex: 0 0 auto;
-}

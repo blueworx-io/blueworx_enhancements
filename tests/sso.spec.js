@@ -366,6 +366,18 @@ test.describe('Single sign-on flow', () => {
     await expect(button).toHaveAttribute('href', /blueworx_sso=login/);
   });
 
+  test('the button carries no icon', async ({ page }) => {
+    await page.goto(cacheBust('/admin_login'));
+
+    const button = page.locator('.blueworx-sso-button');
+    await expect(button).toHaveCount(1);
+
+    // The button is dropped into headers and page content a site owner has
+    // already styled, so it contributes a label and nothing else.
+    await expect(button.locator('svg')).toHaveCount(0);
+    await expect(button.locator('.blueworx-sso-button__label')).toHaveCount(1);
+  });
+
   test('no icon font is loaded for it', async ({ page }) => {
     await page.goto(cacheBust('/admin_login'));
     await expect(page.locator('link[href*="font-awesome"]')).toHaveCount(0);

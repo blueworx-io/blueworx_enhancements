@@ -4,6 +4,14 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses semantic
 versioning.
 
+## [1.81.1] - 2026-09-08
+
+### Changed
+- **The sign-in button no longer draws a padlock.** It is dropped into headers
+  and page content that a site owner has already styled, where an icon of ours
+  only fights with what is around it. The button is now the label and nothing
+  else.
+
 ## [1.81.0] - 2026-09-04
 
 ### Added

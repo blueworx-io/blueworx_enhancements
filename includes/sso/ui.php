@@ -3,8 +3,9 @@
  * Single sign-on: the sign-in button.
  *
  * The label is rendered server-side, so nothing has to correct it in JavaScript
- * after the page has loaded, and the icon is inline rather than an icon font, so
- * the button costs no extra request.
+ * after the page has loaded. The button is the label and nothing else: it is
+ * dropped into headers and page content a site owner has already styled, and an
+ * icon of ours only fights with whatever is around it.
  *
  * @package BlueWorxLabs
  */
@@ -12,18 +13,6 @@
 // Prevent direct file access.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
-}
-
-/**
- * The padlock icon shown on the button.
- *
- * @return string Inline SVG.
- */
-function blueworx_sso_icon_svg() {
-	return '<svg class="blueworx-sso-button__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
-		. '<rect x="3" y="11" width="18" height="11" rx="2" />'
-		. '<path d="M7 11V7a5 5 0 0 1 10 0v4" />'
-		. '</svg>';
 }
 
 /**
@@ -57,9 +46,8 @@ function blueworx_sso_button_html( $args = array() ) {
 	}
 
 	return sprintf(
-		'<a class="blueworx-sso-button blueworx-sso-button--%4$s" href="%1$s">%2$s<span class="blueworx-sso-button__label">%3$s</span></a>',
+		'<a class="blueworx-sso-button blueworx-sso-button--%3$s" href="%1$s"><span class="blueworx-sso-button__label">%2$s</span></a>',
 		esc_url( blueworx_sso_login_url( isset( $args['redirect_to'] ) ? $args['redirect_to'] : '', $intent ) ),
-		blueworx_sso_icon_svg(),
 		esc_html( $label ),
 		esc_attr( $intent )
 	);
@@ -108,27 +96,6 @@ function blueworx_sso_button_allowed_html() {
 			'href'  => array(),
 		),
 		'span' => array( 'class' => array() ),
-		'svg'  => array(
-			'class'            => array(),
-			'width'            => array(),
-			'height'           => array(),
-			'viewbox'          => array(),
-			'fill'             => array(),
-			'stroke'           => array(),
-			'stroke-width'     => array(),
-			'stroke-linecap'   => array(),
-			'stroke-linejoin'  => array(),
-			'aria-hidden'      => array(),
-			'focusable'        => array(),
-		),
-		'rect' => array(
-			'x'      => array(),
-			'y'      => array(),
-			'width'  => array(),
-			'height' => array(),
-			'rx'     => array(),
-		),
-		'path' => array( 'd' => array() ),
 	);
 }
 
