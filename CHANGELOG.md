@@ -4,6 +4,15 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses semantic
 versioning.
 
+## [1.83.0] - 2026-09-08
+
+### Added
+- **The sign-in and joining buttons now say something once somebody is signed
+  in**, instead of disappearing. The sign-in button becomes a way back to
+  wherever signing in sends people, and the joining button signs them out. Both
+  labels can be changed on the Single sign-on screen. Each state carries a class
+  of its own, so a header can style one and leave the other plain.
+
 ## [1.82.0] - 2026-09-08
 
 ### Changed

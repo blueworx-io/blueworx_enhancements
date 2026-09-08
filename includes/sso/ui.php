@@ -28,11 +28,18 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return string Button markup, or an empty string when there is nothing to show.
  */
 function blueworx_sso_button_html( $args = array() ) {
-	if ( ! blueworx_sso_enabled() || is_user_logged_in() ) {
+	if ( ! blueworx_sso_enabled() ) {
 		return '';
 	}
 
 	$intent = blueworx_sso_intent( isset( $args['intent'] ) ? $args['intent'] : 'login' );
+
+	// Signing in is not something you can do twice, so the button becomes the
+	// thing the same person wants next instead of vanishing and leaving a hole
+	// in whatever header or panel it was dropped into.
+	if ( is_user_logged_in() ) {
+		return blueworx_sso_signed_in_link_html( $intent );
+	}
 	$label  = isset( $args['label'] ) ? trim( (string) $args['label'] ) : '';
 
 	if ( '' === $label ) {
@@ -50,6 +57,44 @@ function blueworx_sso_button_html( $args = array() ) {
 		esc_url( blueworx_sso_login_url( isset( $args['redirect_to'] ) ? $args['redirect_to'] : '', $intent ) ),
 		esc_html( $label ),
 		esc_attr( $intent )
+	);
+}
+
+/**
+ * What each button becomes once somebody is signed in.
+ *
+ * The sign-in button turns into a way back to wherever signing in would have
+ * put them, and the joining button — the only other one — turns into signing
+ * out. Both keep the button's classes, with a modifier of their own so a site
+ * can style or unstyle each state without touching the others.
+ *
+ * @param string $intent Which button this is: 'login' or 'register'.
+ * @return string Link markup.
+ */
+function blueworx_sso_signed_in_link_html( $intent ) {
+	if ( 'register' === $intent ) {
+		$variant = 'logout';
+		$url     = wp_logout_url();
+		$label   = trim( (string) blueworx_sso_option( 'logout_button_label' ) );
+
+		if ( '' === $label ) {
+			$label = __( 'Log out', 'blueworx-labs-wordpress' );
+		}
+	} else {
+		$variant = 'dashboard';
+		$url     = blueworx_sso_default_destination( 'login' );
+		$label   = trim( (string) blueworx_sso_option( 'dashboard_button_label' ) );
+
+		if ( '' === $label ) {
+			$label = __( 'Dashboard', 'blueworx-labs-wordpress' );
+		}
+	}
+
+	return sprintf(
+		'<a class="blueworx-sso-button blueworx-sso-button--%3$s" href="%1$s"><span class="blueworx-sso-button__label">%2$s</span></a>',
+		esc_url( $url ),
+		esc_html( $label ),
+		esc_attr( $variant )
 	);
 }
 

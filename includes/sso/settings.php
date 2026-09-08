@@ -277,6 +277,29 @@ function blueworx_sso_render_detail() {
 		)
 	);
 
+	// The same two buttons, worded for somebody who is already signed in. They
+	// sit in headers that are drawn once for everybody, so they have to say
+	// something sensible in both states rather than disappear.
+	$fields .= blueworx_sso_text_field(
+		array(
+			'key'         => 'dashboard_button_label',
+			'label'       => __( 'Button text once signed in', 'blueworx-labs-wordpress' ),
+			'type'        => 'text',
+			'placeholder' => __( 'Dashboard', 'blueworx-labs-wordpress' ),
+			'help'        => __( 'The sign-in button becomes this, pointing wherever signing in sends people.', 'blueworx-labs-wordpress' ),
+		)
+	);
+
+	$fields .= blueworx_sso_text_field(
+		array(
+			'key'         => 'logout_button_label',
+			'label'       => __( 'Joining button text once signed in', 'blueworx-labs-wordpress' ),
+			'type'        => 'text',
+			'placeholder' => __( 'Log out', 'blueworx-labs-wordpress' ),
+			'help'        => __( 'The joining button becomes this, and signs them out.', 'blueworx-labs-wordpress' ),
+		)
+	);
+
 	// Directly above the joining switch, because it is the sentence that makes
 	// that switch safe to turn on: a provider like Google vouches for the whole
 	// world, and "anyone with an account there" is rarely who the site means.
@@ -621,7 +644,7 @@ add_action( 'admin_post_blueworx_save_sso_settings', 'blueworx_sso_handle_settin
  * @return void
  */
 function blueworx_sso_save_settings( $posted ) {
-	$text_fields = array( 'client_id', 'button_label', 'register_button_label', 'scope', 'signup_prompt', 'allowed_domains' );
+	$text_fields = array( 'client_id', 'button_label', 'register_button_label', 'dashboard_button_label', 'logout_button_label', 'scope', 'signup_prompt', 'allowed_domains' );
 
 	foreach ( $text_fields as $field ) {
 		$value = isset( $posted[ 'blueworx_sso_' . $field ] ) ? sanitize_text_field( wp_unslash( $posted[ 'blueworx_sso_' . $field ] ) ) : '';
