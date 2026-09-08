@@ -188,6 +188,30 @@ test.describe('Single sign-on', () => {
     ]);
   });
 
+  test('the failure destination survives a save', async ({ page }) => {
+    await login(page);
+    await setSso(page, true);
+
+    await page.goto(SSO_PATH);
+    await page.fill('#blueworx_sso_failure_url', 'https://example.test/sorry/');
+    await save(page);
+
+    await page.goto(SSO_PATH);
+    await expect(page.locator('#blueworx_sso_failure_url')).toHaveValue('https://example.test/sorry/');
+
+    await restoreAll([
+      [
+        'failure destination cleared',
+        async () => {
+          await page.goto(SSO_PATH);
+          await page.fill('#blueworx_sso_failure_url', '');
+          await save(page);
+          await setSso(page, false);
+        },
+      ],
+    ]);
+  });
+
   test('the allowed domains and the sign-out switch survive a save', async ({ page }) => {
     await login(page);
     await setSso(page, true);
@@ -345,6 +369,32 @@ test.describe('Single sign-on flow', () => {
 
     expect(replay.status()).toBe(302);
     expect(replay.headers().location).toContain('blueworx_sso_error=1');
+  });
+
+  test('a failed sign-in lands on the home page, not the login screen', async ({ page }) => {
+    const response = await page.request.get('/?blueworx_sso=callback&code=abc&state=nonsense', {
+      maxRedirects: 0,
+    });
+
+    // The whole point of the change: somebody who clicked a button on the front
+    // of the site must not be dropped on a WordPress login form.
+    const target = new URL(response.headers().location, 'https://example.test');
+    expect(target.pathname).toBe('/');
+    expect(target.pathname).not.toContain('login');
+    expect(target.searchParams.get('blueworx_sso_error')).toBe('1');
+  });
+
+  test('the home page says the sign-in did not work', async ({ page }) => {
+    await page.goto(cacheBust('/?blueworx_sso_error=1'));
+
+    const notice = page.locator('.blueworx-sso-notice');
+    await expect(notice).toHaveCount(1);
+    await expect(notice).toContainText('could not sign you in');
+  });
+
+  test('the notice is absent from an ordinary page view', async ({ page }) => {
+    await page.goto(cacheBust('/'));
+    await expect(page.locator('.blueworx-sso-notice')).toHaveCount(0);
   });
 
   test('the failure message on the login screen gives nothing away', async ({ page }) => {

@@ -341,8 +341,25 @@ function blueworx_sso_start( $intent = 'login' ) {
 function blueworx_sso_fail( $reason, $extra = array() ) {
 	blueworx_sso_log( 'failure', $reason, $extra );
 
-	wp_safe_redirect( add_query_arg( 'blueworx_sso_error', '1', wp_login_url() ) );
+	wp_safe_redirect( add_query_arg( 'blueworx_sso_error', '1', blueworx_sso_failure_url() ) );
 	exit;
+}
+
+/**
+ * Where somebody lands when a sign-in fails.
+ *
+ * The login screen is the wrong place for most of these. Somebody who clicked a
+ * sign-in button on the front of the site did not ask to see a WordPress login
+ * form, and dropping them on one reads as "your account is broken" rather than
+ * "that did not work, try again". The home page is somewhere they recognise, and
+ * the notice travels with them.
+ *
+ * @return string Absolute URL.
+ */
+function blueworx_sso_failure_url() {
+	$configured = trim( (string) blueworx_sso_option( 'failure_url' ) );
+
+	return '' !== $configured ? $configured : home_url( '/' );
 }
 
 /**
@@ -834,6 +851,6 @@ function blueworx_sso_login_message( $message ) {
 		return $message;
 	}
 
-	return $message . '<div id="login_error">' . esc_html__( 'We could not sign you in. Please try again.', 'blueworx-labs-wordpress' ) . '</div>';
+	return $message . '<div id="login_error">' . esc_html( blueworx_sso_failure_message() ) . '</div>';
 }
 add_filter( 'login_message', 'blueworx_sso_login_message' );
