@@ -10,6 +10,10 @@
  * in tests/php, which run without WordPress.
  */
 
+import { execFileSync } from 'node:child_process';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import {
   test,
   expect,
@@ -24,6 +28,23 @@ import {
 
 const SETTINGS_PATH = '/wp-admin/admin.php?page=blueworx-labs-wordpress';
 const SSO_PATH = '/wp-admin/admin.php?page=blueworx-sso';
+
+const dirname = path.dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Publishes or removes the page carrying both buttons.
+ *
+ * The login screen only shows the sign-in button, and only to somebody signed
+ * out. See tests/fixtures/sso-button-page.php.
+ *
+ * @param {string} command 'create' or 'delete'.
+ * @return {string} The page's address, when creating.
+ */
+function buttonPage(command) {
+  const fixture = path.join(dirname, 'fixtures', 'sso-button-page.php');
+  const wpLoad = path.join(dirname, '..', '.wp-test', 'wp', 'wp-load.php');
+  return execFileSync('php', [fixture, wpLoad, command], { encoding: 'utf8' }).trim();
+}
 
 const toggleFor = (key) => `input.blueworx-feature-toggle[data-blueworx-feature="${key}"]`;
 
@@ -181,6 +202,30 @@ test.describe('Single sign-on', () => {
           await page.goto(SSO_PATH);
           await page.fill('#blueworx_sso_redirect_after_register', '');
           await page.fill('#blueworx_sso_no_account_url', '');
+          await save(page);
+          await setSso(page, false);
+        },
+      ],
+    ]);
+  });
+
+  test('the failure destination survives a save', async ({ page }) => {
+    await login(page);
+    await setSso(page, true);
+
+    await page.goto(SSO_PATH);
+    await page.fill('#blueworx_sso_failure_url', 'https://example.test/sorry/');
+    await save(page);
+
+    await page.goto(SSO_PATH);
+    await expect(page.locator('#blueworx_sso_failure_url')).toHaveValue('https://example.test/sorry/');
+
+    await restoreAll([
+      [
+        'failure destination cleared',
+        async () => {
+          await page.goto(SSO_PATH);
+          await page.fill('#blueworx_sso_failure_url', '');
           await save(page);
           await setSso(page, false);
         },
@@ -347,6 +392,32 @@ test.describe('Single sign-on flow', () => {
     expect(replay.headers().location).toContain('blueworx_sso_error=1');
   });
 
+  test('a failed sign-in lands on the home page, not the login screen', async ({ page }) => {
+    const response = await page.request.get('/?blueworx_sso=callback&code=abc&state=nonsense', {
+      maxRedirects: 0,
+    });
+
+    // The whole point of the change: somebody who clicked a button on the front
+    // of the site must not be dropped on a WordPress login form.
+    const target = new URL(response.headers().location, 'https://example.test');
+    expect(target.pathname).toBe('/');
+    expect(target.pathname).not.toContain('login');
+    expect(target.searchParams.get('blueworx_sso_error')).toBe('1');
+  });
+
+  test('the home page says the sign-in did not work', async ({ page }) => {
+    await page.goto(cacheBust('/?blueworx_sso_error=1'));
+
+    const notice = page.locator('.blueworx-sso-notice');
+    await expect(notice).toHaveCount(1);
+    await expect(notice).toContainText('could not sign you in');
+  });
+
+  test('the notice is absent from an ordinary page view', async ({ page }) => {
+    await page.goto(cacheBust('/'));
+    await expect(page.locator('.blueworx-sso-notice')).toHaveCount(0);
+  });
+
   test('the failure message on the login screen gives nothing away', async ({ page }) => {
     await page.goto(cacheBust('/admin_login?blueworx_sso_error=1'));
     const body = await page.locator('body').innerText();
@@ -364,6 +435,18 @@ test.describe('Single sign-on flow', () => {
     await expect(button).toBeVisible();
     await expect(button).toContainText('Sign in with Test IdP');
     await expect(button).toHaveAttribute('href', /blueworx_sso=login/);
+  });
+
+  test('the button carries no icon', async ({ page }) => {
+    await page.goto(cacheBust('/admin_login'));
+
+    const button = page.locator('.blueworx-sso-button');
+    await expect(button).toHaveCount(1);
+
+    // The button is dropped into headers and page content a site owner has
+    // already styled, so it contributes a label and nothing else.
+    await expect(button.locator('svg')).toHaveCount(0);
+    await expect(button.locator('.blueworx-sso-button__label')).toHaveCount(1);
   });
 
   test('no icon font is loaded for it', async ({ page }) => {
@@ -420,5 +503,105 @@ test.describe('Single sign-on flow', () => {
 
     const stateOf = (response) => new URL(response.headers().location).searchParams.get('state');
     expect(stateOf(first)).not.toBe(stateOf(second));
+  });
+});
+
+test.describe('Single sign-on buttons once signed in', () => {
+  test.skip(
+    isPlaceholder || !ADMIN_USER || !ADMIN_PASS,
+    'No real staging/preview URL and/or WP_ADMIN_USER / WP_ADMIN_PASS configured yet.'
+  );
+
+  let pageUrl;
+
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await login(page);
+    await setSso(page, true);
+    await page.goto(SSO_PATH);
+    await page.fill('#blueworx_sso_issuer', 'https://idp.test');
+    await page.fill('#blueworx_sso_client_id', 'test-client');
+    await page.fill('#blueworx_sso_client_secret', 'test-secret');
+    await page.fill('#blueworx_sso_redirect_after_login', 'https://example.test/portal/');
+    await save(page);
+    await page.close();
+
+    pageUrl = buttonPage('create');
+  });
+
+  test.afterAll(async ({ browser }) => {
+    buttonPage('delete');
+
+    const page = await browser.newPage();
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await login(page);
+    await page.goto(SSO_PATH);
+    await page.fill('#blueworx_sso_redirect_after_login', '');
+    await save(page);
+    await setSso(page, false);
+    await page.close();
+  });
+
+  test('signed out, the two buttons sign in and join', async ({ page }) => {
+    await page.goto(cacheBust(pageUrl));
+
+    await expect(page.locator('.blueworx-sso-button--login')).toHaveCount(1);
+    await expect(page.locator('.blueworx-sso-button--register')).toHaveCount(1);
+  });
+
+  test('signed in, they become a way onward and a way out', async ({ page }) => {
+    await login(page);
+    await page.goto(cacheBust(pageUrl));
+
+    // Neither button vanishes: they sit in headers drawn once for everybody, and
+    // a hole where a button was is worse than a button that says something else.
+    await expect(page.locator('.blueworx-sso-button--login')).toHaveCount(0);
+    await expect(page.locator('.blueworx-sso-button--register')).toHaveCount(0);
+
+    const dashboard = page.locator('.blueworx-sso-button--dashboard');
+    await expect(dashboard).toHaveCount(1);
+    await expect(dashboard).toHaveText('Dashboard');
+    await expect(dashboard).toHaveAttribute('href', 'https://example.test/portal/');
+
+    const logout = page.locator('.blueworx-sso-button--logout');
+    await expect(logout).toHaveCount(1);
+    await expect(logout).toHaveText('Log out');
+    await expect(logout).toHaveAttribute('href', /action=logout/);
+  });
+
+  test('neither signed-in link carries an icon', async ({ page }) => {
+    await login(page);
+    await page.goto(cacheBust(pageUrl));
+
+    for (const variant of ['dashboard', 'logout']) {
+      const link = page.locator(`.blueworx-sso-button--${variant}`);
+      await expect(link.locator('svg')).toHaveCount(0);
+      await expect(link.locator('.blueworx-sso-button__label')).toHaveCount(1);
+    }
+  });
+
+  test('the signed-in wording can be changed', async ({ page }) => {
+    await login(page);
+    await page.goto(SSO_PATH);
+    await page.fill('#blueworx_sso_dashboard_button_label', 'My referee area');
+    await page.fill('#blueworx_sso_logout_button_label', 'Sign out');
+    await save(page);
+
+    await page.goto(cacheBust(pageUrl));
+    await expect(page.locator('.blueworx-sso-button--dashboard')).toHaveText('My referee area');
+    await expect(page.locator('.blueworx-sso-button--logout')).toHaveText('Sign out');
+
+    await restoreAll([
+      [
+        'signed-in wording cleared',
+        async () => {
+          await page.goto(SSO_PATH);
+          await page.fill('#blueworx_sso_dashboard_button_label', '');
+          await page.fill('#blueworx_sso_logout_button_label', '');
+          await save(page);
+        },
+      ],
+    ]);
   });
 });

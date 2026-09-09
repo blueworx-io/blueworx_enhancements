@@ -4,6 +4,28 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses semantic
 versioning.
 
+## [1.85.0] - 2026-09-09
+
+### Added
+- **The sign-in and joining buttons now say something once somebody is signed
+  in**, instead of disappearing. The sign-in button becomes a way back to
+  wherever signing in sends people, and the joining button signs them out. Both
+  labels can be changed on the Single sign-on screen. Each state carries a class
+  of its own, so a header can style one and leave the other plain.
+
+### Changed
+- **A failed sign-in no longer lands on the login screen.** Somebody who
+  clicked a sign-in button on the front of the site is sent back to the home
+  page, with a short line telling them it did not work — not dropped on a
+  WordPress login form, which reads as "your account is broken". A new field on
+  the Single sign-on screen, "Send people here when a sign-in fails", points it
+  somewhere else if the home page is not right. Blank means the home page.
+  Sites that want the old behaviour can set it to their login address.
+- **The sign-in button no longer draws a padlock.** It is dropped into headers
+  and page content that a site owner has already styled, where an icon of ours
+  only fights with what is around it. The button is now the label and nothing
+  else.
+
 ## [1.84.0] - 2026-09-09
 
 ### Changed

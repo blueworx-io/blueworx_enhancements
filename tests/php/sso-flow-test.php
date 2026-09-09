@@ -150,6 +150,28 @@ $GLOBALS['options']['blueworx_sso_redirect_after_register'] = 'https://example.t
 check( 'joining uses its own page', blueworx_sso_default_destination( 'register' ), 'https://example.test/register-success/' );
 check( 'and signing in is unaffected', blueworx_sso_default_destination( 'login' ), 'https://example.test/welcome/' );
 
+echo "
+Where a failed sign-in lands
+";
+
+// The login screen is the wrong answer for somebody who clicked a button on the
+// front of the site: it reads as "your account is broken" rather than "that did
+// not work". The home page is somewhere they recognise.
+check( 'nothing set means the home page', blueworx_sso_failure_url(), 'https://example.test/' );
+
+$GLOBALS['options']['blueworx_sso_failure_url'] = 'https://example.test/sorry/';
+check( 'a configured page wins', blueworx_sso_failure_url(), 'https://example.test/sorry/' );
+
+// A site that wants the old behaviour back sets its login address here, so the
+// setting has to accept one rather than special-casing it away.
+$GLOBALS['options']['blueworx_sso_failure_url'] = 'https://example.test/admin_login/';
+check( 'including a login page, for sites that want the old behaviour', blueworx_sso_failure_url(), 'https://example.test/admin_login/' );
+
+$GLOBALS['options']['blueworx_sso_failure_url'] = '   ';
+check( 'and whitespace counts as blank', blueworx_sso_failure_url(), 'https://example.test/' );
+
+unset( $GLOBALS['options']['blueworx_sso_failure_url'] );
+
 echo "\nThe two entry points\n";
 
 check( 'the sign-in link', blueworx_sso_login_url(), 'https://example.test/?blueworx_sso=login' );

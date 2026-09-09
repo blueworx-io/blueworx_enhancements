@@ -277,6 +277,29 @@ function blueworx_sso_render_detail() {
 		)
 	);
 
+	// The same two buttons, worded for somebody who is already signed in. They
+	// sit in headers that are drawn once for everybody, so they have to say
+	// something sensible in both states rather than disappear.
+	$fields .= blueworx_sso_text_field(
+		array(
+			'key'         => 'dashboard_button_label',
+			'label'       => __( 'Button text once signed in', 'blueworx-labs-wordpress' ),
+			'type'        => 'text',
+			'placeholder' => __( 'Dashboard', 'blueworx-labs-wordpress' ),
+			'help'        => __( 'The sign-in button becomes this, pointing wherever signing in sends people.', 'blueworx-labs-wordpress' ),
+		)
+	);
+
+	$fields .= blueworx_sso_text_field(
+		array(
+			'key'         => 'logout_button_label',
+			'label'       => __( 'Joining button text once signed in', 'blueworx-labs-wordpress' ),
+			'type'        => 'text',
+			'placeholder' => __( 'Log out', 'blueworx-labs-wordpress' ),
+			'help'        => __( 'The joining button becomes this, and signs them out.', 'blueworx-labs-wordpress' ),
+		)
+	);
+
 	// Directly above the joining switch, because it is the sentence that makes
 	// that switch safe to turn on: a provider like Google vouches for the whole
 	// world, and "anyone with an account there" is rarely who the site means.
@@ -341,6 +364,15 @@ function blueworx_sso_render_detail() {
 			'key'   => 'no_account_url',
 			'label' => __( 'Send people here when they sign in and have no account', 'blueworx-labs-wordpress' ),
 			'help'  => __( 'Your joining page. Leave blank to show the usual "we could not sign you in" message instead.', 'blueworx-labs-wordpress' ),
+		)
+	);
+
+	$fields .= blueworx_sso_text_field(
+		array(
+			'key'         => 'failure_url',
+			'label'       => __( 'Send people here when a sign-in fails', 'blueworx-labs-wordpress' ),
+			'placeholder' => home_url( '/' ),
+			'help'        => __( 'Leave blank for your home page. Wherever they land, they are told the sign-in did not work.', 'blueworx-labs-wordpress' ),
 		)
 	);
 
@@ -612,14 +644,14 @@ add_action( 'admin_post_blueworx_save_sso_settings', 'blueworx_sso_handle_settin
  * @return void
  */
 function blueworx_sso_save_settings( $posted ) {
-	$text_fields = array( 'client_id', 'button_label', 'register_button_label', 'scope', 'signup_prompt', 'allowed_domains' );
+	$text_fields = array( 'client_id', 'button_label', 'register_button_label', 'dashboard_button_label', 'logout_button_label', 'scope', 'signup_prompt', 'allowed_domains' );
 
 	foreach ( $text_fields as $field ) {
 		$value = isset( $posted[ 'blueworx_sso_' . $field ] ) ? sanitize_text_field( wp_unslash( $posted[ 'blueworx_sso_' . $field ] ) ) : '';
 		update_option( 'blueworx_sso_' . $field, $value, false );
 	}
 
-	$url_fields = array( 'issuer', 'redirect_uri', 'redirect_after_login', 'redirect_after_register', 'redirect_after_logout', 'no_account_url' );
+	$url_fields = array( 'issuer', 'redirect_uri', 'redirect_after_login', 'redirect_after_register', 'redirect_after_logout', 'no_account_url', 'failure_url' );
 
 	foreach ( blueworx_sso_endpoint_override_fields() as $key => $unused_label ) {
 		$url_fields[] = $key . '_override';
