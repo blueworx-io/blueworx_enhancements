@@ -815,6 +815,39 @@ test.describe('BlueWorx admin theme', () => {
     expect(undo.x).toBeGreaterThanOrEqual(sidebar.x + sidebar.width);
   });
 
+  test('the save bar starts where the content column starts, not under the sidebar', async ({
+    page,
+  }) => {
+    // Above the 961px breakpoint, so the sidebar is in its expanded (232px)
+    // state — the state where the design system's 160px assumption and our
+    // width disagree.
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await login(page);
+    await page.goto(SETTINGS_PATH);
+
+    const bar = page.locator('.bw-savebar');
+    await expect(bar).toBeVisible();
+
+    const sidebar = await page.locator('#adminmenuback').boundingBox();
+    const box = await bar.boundingBox();
+
+    // The design system pins the bar to core's 160px expanded admin-menu
+    // width. Ours is 232px, so without the matching override the bar's left
+    // end — and the message printed in it — lies across the menu.
+    expect(box.x).toBeGreaterThanOrEqual(sidebar.x + sidebar.width);
+
+    // Folded, the two widths already agree, so the bar must not be pushed
+    // past the collapsed menu either.
+    await page.evaluate(() => document.body.classList.add('folded'));
+
+    const foldedSidebar = await page.locator('#adminmenuback').boundingBox();
+    const foldedBar = await bar.boundingBox();
+    expect(foldedBar.x).toBeGreaterThanOrEqual(
+      foldedSidebar.x + foldedSidebar.width
+    );
+    expect(foldedBar.x).toBeLessThan(box.x);
+  });
+
   test('the BlueWorx top bar hides itself in fullscreen mode instead of covering the editor toolbar', async ({ page }) => {
     await login(page);
     await page.goto('/wp-admin/post-new.php');
