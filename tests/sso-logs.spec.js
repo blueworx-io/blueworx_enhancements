@@ -83,7 +83,10 @@ test.describe('SSO Logs', () => {
     const hasTable = await table.count();
 
     if (hasTable > 0) {
-      const headings = await table.locator('thead th').allInnerTexts();
+      // textContent rather than innerText: the design system sets the headings
+      // in capitals with text-transform, and innerText reports what is painted,
+      // so every one of these read as SHOUTED and matched nothing.
+      const headings = await table.locator('thead th').allTextContents();
       const joined = headings.join(' ');
 
       expect(joined).toContain('When');
@@ -113,6 +116,36 @@ test.describe('SSO Logs', () => {
         expect(body).not.toContain(cookie.value);
       }
     }
+  });
+
+  test('the screen runs flush to the admin chrome like the rest', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await login(page);
+    await page.goto(LOGS);
+
+    const flush = await page.evaluate(() => {
+      const page_ = document.querySelector('.bw-page');
+      const column = document.querySelector('#wpbody-content');
+
+      if (!page_ || !column) {
+        return null;
+      }
+
+      const a = page_.getBoundingClientRect();
+      const b = column.getBoundingClientRect();
+
+      return { left: a.left - b.left, right: b.right - a.right, top: a.top - b.top };
+    });
+
+    expect(flush, 'no .bw-page inside #wpbody-content').not.toBeNull();
+
+    // This screen was left off the full-bleed list, so WordPress's own .wrap
+    // margins of 10px 20px 0 2px stayed and drew a gutter round the header that
+    // no other BlueWorx screen has. Measuring is the only thing that fails
+    // before the fix — the markup is identical either way.
+    expect(flush.left, 'the screen is inset from the left of the column').toBeLessThanOrEqual(1);
+    expect(flush.right, 'the screen is inset from the right of the column').toBeLessThanOrEqual(1);
+    expect(flush.top, 'the screen is pushed down from the top of the column').toBeLessThanOrEqual(1);
   });
 });
 
