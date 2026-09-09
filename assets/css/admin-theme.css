@@ -1148,6 +1148,17 @@ div.error {
 	body:not(.folded).block-editor-page:not(.is-fullscreen-mode) .interface-interface-skeleton {
 		left: var(--bwt-sidebar-w);
 	}
+
+	/* The same problem from a second source. The shared admin design system
+	   pins its save bar — the fixed strip our plugin screens put Save into —
+	   to core's 160px as well, so on our wider sidebar its left end lies
+	   across the menu and buries the message beside it. The bar belongs to
+	   the content column, so it starts where the content column starts.
+	   Folded and phone widths already agree with core's, so only the
+	   expanded case needs saying here. */
+	body.wp-admin:not(.folded) .bw-savebar {
+		left: var(--bwt-sidebar-w);
+	}
 }
 
 /* ─── Plugin app screens ───

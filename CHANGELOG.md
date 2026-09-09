@@ -4,6 +4,15 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses semantic
 versioning.
 
+## [1.85.1] - 2026-09-09
+
+### Fixed
+- **The save bar at the bottom of a plugin screen no longer runs underneath the
+  menu.** Our sidebar is wider than the one WordPress ships, and the bar was
+  still starting where WordPress' own menu ends, so its left end — and the
+  line telling you whether anything is unsaved — sat behind the menu. It now
+  starts where the page does.
+
 ## [1.85.0] - 2026-09-09
 
 ### Added
