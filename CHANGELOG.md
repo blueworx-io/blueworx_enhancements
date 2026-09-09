@@ -4,7 +4,7 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); this project uses semantic
 versioning.
 
-## [1.83.0] - 2026-09-08
+## [1.85.0] - 2026-09-09
 
 ### Added
 - **The sign-in and joining buttons now say something once somebody is signed
@@ -12,8 +12,6 @@ versioning.
   wherever signing in sends people, and the joining button signs them out. Both
   labels can be changed on the Single sign-on screen. Each state carries a class
   of its own, so a header can style one and leave the other plain.
-
-## [1.82.0] - 2026-09-08
 
 ### Changed
 - **A failed sign-in no longer lands on the login screen.** Somebody who
@@ -23,14 +21,36 @@ versioning.
   the Single sign-on screen, "Send people here when a sign-in fails", points it
   somewhere else if the home page is not right. Blank means the home page.
   Sites that want the old behaviour can set it to their login address.
-
-## [1.81.1] - 2026-09-08
-
-### Changed
 - **The sign-in button no longer draws a padlock.** It is dropped into headers
   and page content that a site owner has already styled, where an icon of ours
   only fights with what is around it. The button is now the label and nothing
   else.
+
+## [1.84.0] - 2026-09-09
+
+### Changed
+
+- Admin screens pick up the latest shared design. The save bar is pinned to the
+  bottom of the window instead of drifting up the page on a short screen, and
+  toggles now sit to the right of the setting they switch, lined up down the
+  edge. A switch that cannot be used says so rather than highlighting when you
+  drag across it.
+
+## [1.82.0] - 2026-09-07
+
+### Fixed
+
+- On a site running another BlueWorx plugin, the newest copy of the admin design
+  system is now the one that loads. Whichever plugin happened to load first used
+  to decide how every BlueWorx screen looked, including other plugins' screens.
+
+## [1.81.1] - 2026-09-06
+
+### Fixed
+- **SSO Logs sat in a box of its own.** The screen was missing from the list of
+  BlueWorx pages that run edge to edge, so WordPress's own page margins were
+  left around it and its header had a grey gutter no other screen has. Single
+  sign-on's own settings screen did the same while sign-on was switched off.
 
 ## [1.81.0] - 2026-09-04
 

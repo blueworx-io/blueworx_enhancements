@@ -48,7 +48,16 @@ function blueworx_admin_design_screens() {
 		'blueworx_page_blueworx-edit-menu',
 		'blueworx_page_blueworx-cache',
 		'blueworx_page_blueworx-support',
+		// Single sign-on and its log are each named twice on purpose: they hang
+		// off the BlueWorx menu while sign-on is on, and off no parent at all
+		// while it is off, and the hook suffix is different in each case. Named
+		// both ways so they run flush either way rather than only while the
+		// function is running — switched off, the screen still has something to
+		// say, and it should not be the one page in a box of its own.
 		'blueworx_page_blueworx-sso',
+		'admin_page_blueworx-sso',
+		'blueworx_page_blueworx-sso-logs',
+		'admin_page_blueworx-sso-logs',
 		'blueworx_page_blueworx-external',
 		'blueworx_page_blueworx-embedded',
 		'blueworx_page_blueworx-additions',
@@ -113,6 +122,10 @@ function blueworx_admin_design_core_screens() {
 /**
  * Enqueues the shared design system stylesheet.
  *
+ * Delegates to the registrar in assets/blueworx-admin-design.php, which picks
+ * the newest copy of the design system present on the site — not necessarily
+ * this plugin's own — and enqueues that one, once.
+ *
  * Also the plugin's only source of @font-face for Sora and Inter — the separate
  * fonts stylesheet this replaced declared the same six faces against the same
  * files, and two declarations of one thing is one too many. That is why the
@@ -122,12 +135,7 @@ function blueworx_admin_design_core_screens() {
  * @return void
  */
 function blueworx_enqueue_admin_design_style() {
-	wp_enqueue_style(
-		'blueworx-admin-design',
-		BLUEWORX_LABS_URL . 'assets/blueworx-admin-design.css',
-		array(),
-		blueworx_get_admin_asset_version( 'assets/blueworx-admin-design.css' )
-	);
+	blueworx_admin_design_enqueue();
 }
 
 /**
@@ -170,9 +178,10 @@ add_action( 'admin_enqueue_scripts', 'blueworx_enqueue_admin_design_system' );
 /**
  * Enqueues the design system's icon module.
  *
- * Icons are inlined as SVG by the system's own module, which upgrades any
- * [data-lucide] element. Shipped as a module because that is how the system
- * publishes it; the markup degrades to an empty span without it.
+ * Delegates to the registrar, which enqueues the newest copy's icon module and
+ * carries the type="module" rewrite for it. Icons are inlined as SVG by the
+ * system's own module, which upgrades any [data-lucide] element; the markup
+ * degrades to an empty span without it.
  *
  * Its own function because two callers need it. The screens that load the whole
  * design system are one; the admin re-skin is the other — its top bar renders on
@@ -183,34 +192,8 @@ add_action( 'admin_enqueue_scripts', 'blueworx_enqueue_admin_design_system' );
  * @return void
  */
 function blueworx_enqueue_admin_design_icons() {
-	wp_enqueue_script(
-		'blueworx-admin-design-icons',
-		BLUEWORX_LABS_URL . 'assets/blueworx-admin-icons.js',
-		array(),
-		blueworx_get_admin_asset_version( 'assets/blueworx-admin-icons.js' ),
-		true
-	);
+	blueworx_admin_design_enqueue_icons();
 }
-
-/**
- * Serves the icon module as a real ES module.
- *
- * On the WordPress versions this plugin supports, wp_enqueue_script() has no
- * module type of its own, and the file uses `export`, so without this the
- * browser rejects it on the first export statement.
- *
- * @param string $tag    Script tag.
- * @param string $handle Script handle.
- * @return string Script tag.
- */
-function blueworx_admin_design_icons_module( $tag, $handle ) {
-	if ( 'blueworx-admin-design-icons' !== $handle ) {
-		return $tag;
-	}
-
-	return str_replace( '<script ', '<script type="module" ', $tag );
-}
-add_filter( 'script_loader_tag', 'blueworx_admin_design_icons_module', 10, 2 );
 
 /**
  * Loads admin scripts only on screens touched by this plugin.
